@@ -27,7 +27,6 @@
 #include <errno.h>
 #include <syslog.h>
 #include <time.h>
-#include "kafka.h"
 #include "librdkafka/rdkafka.h"
 
 static int run = 1;
@@ -104,6 +103,8 @@ void kafka_produce(char* topic, char* msg, int msg_len)
 
         /* Kafka configuration */
         conf = rd_kafka_conf_new();
+
+        rd_kafka_conf_set_log_cb(conf, rd_kafka_log_syslog);
 
         if (!(rk = rd_kafka_new(RD_KAFKA_PRODUCER, conf, errstr, sizeof(errstr)))) {
                 openlog("phpkafka", 0, LOG_USER);
@@ -216,6 +217,8 @@ void kafka_consume(zval* return_value, char* topic, char* offset, int item_count
     /* Kafka configuration */
     conf = rd_kafka_conf_new();
 
+    rd_kafka_conf_set_log_cb(conf, rd_kafka_log_syslog);
+
     /* Create Kafka handle */
     if (!(rk = rd_kafka_new(RD_KAFKA_CONSUMER, conf, errstr, sizeof(errstr)))) {
                   openlog("phpkafka", 0, LOG_USER);
@@ -288,3 +291,4 @@ void kafka_consume(zval* return_value, char* topic, char* offset, int item_count
     rd_kafka_topic_destroy(rkt);
     rd_kafka_destroy(rk);
 }
+
